@@ -1,41 +1,45 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function AdminLogin() {
-  const router = useRouter();
+export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  function handleLogin() {
+  function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+
     if (password === "admin123") {
       localStorage.setItem("admin-auth", "true");
-      router.push("/admin");
+      router.replace("/admin");
     } else {
       alert("Senha incorreta");
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950">
-      <div className="w-full max-w-sm rounded-xl bg-zinc-900 p-6 space-y-4">
-        <h1 className="text-xl font-bold text-center">Admin Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-black">
+      <form
+        onSubmit={handleLogin}
+        className="bg-zinc-900 p-8 rounded-xl w-full max-w-sm"
+      >
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Login Admin
+        </h1>
 
         <input
           type="password"
           placeholder="Senha"
-          className="w-full rounded-md px-3 py-2 bg-zinc-800"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
+          className="w-full p-3 rounded bg-zinc-800 mb-4"
         />
 
-        <button
-          onClick={handleLogin}
-          className="w-full rounded-md bg-yellow-400 py-2 font-bold text-black hover:bg-yellow-500"
-        >
+        <button className="w-full bg-yellow-400 text-black py-3 rounded font-bold">
           Entrar
         </button>
-      </div>
-    </main>
+      </form>
+    </div>
   );
 }
