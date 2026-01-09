@@ -1,10 +1,7 @@
 "use client";
 
-
-import { products as initialProducts } from "@/data/products";
+import { useEffect, useState } from "react";
 import { Product } from "@/types/Product";
-import { useState, useEffect } from "react";
-
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,76 +9,80 @@ export default function AdminProductsPage() {
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const STORAGE_KEY = "admin-products";
+  const [loading, setLoading] = useState(false);
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [category, setCategory] = useState("");
+
+  // 🔄 BUSCAR PRODUTOS
+  async function loadProducts() {
+    const res = await fetch("/api/products");
+    const data = await res.json();
+    setProducts(data);
+  }
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-
-      if (stored) {
-        const parsed: Product[] = JSON.parse(stored);
-
-        if (parsed.length > 0) {
-          setProducts(parsed);
-          return;
-        }
-      }
-
-      // fallback real
-      setProducts(initialProducts);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProducts));
-    } catch {
-      setProducts(initialProducts);
-    }
+    loadProducts();
   }, []);
 
-
-  // 📸 UPLOAD + PREVIEW (local por enquanto)
+  // 📸 Preview local
   function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       setImage(e.target?.result as string);
-      setUploading(false);
     };
     reader.readAsDataURL(file);
   }
 
-  // ➕ CRIAR / ✏️ EDITAR
-  function handleSubmit(e: React.FormEvent) {
+  // ➕ / ✏️ SALVAR
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (!name || !description) return;
 
+    setLoading(true);
+
     if (editingId) {
-      setProducts(prev =>
-        prev.map(p =>
-          p.id === editingId
-            ? { ...p, name, description, image }
-            : p
-        )
-      );
-      setEditingId(null);
-    } else {
-      setProducts(prev => [
-        ...prev,
-        {
-          id: Date.now(),
+      await fetch(`/api/products/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           name,
           description,
           image,
-        },
-      ]);
+          price: Number(price),
+          stock: Number(stock),
+          category,
+        }),
+      });
+    } else {
+      await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          image,
+          price: Number(price),
+          stock: Number(stock),
+          category,
+        }),
+      });
     }
 
+    // resetar formulário
     setName("");
     setDescription("");
     setImage("");
+    setPrice("");
+    setStock("");
+    setCategory("");
+    setEditingId(null);
+    setLoading(false);
+
+    loadProducts();
   }
 
   // ✏️ EDITAR
@@ -89,20 +90,26 @@ export default function AdminProductsPage() {
     setEditingId(product.id);
     setName(product.name);
     setDescription(product.description);
-    setImage(product.image);
+    setImage(product.image ?? "");
+    setPrice(product.price.toString());
+    setStock(product.stock.toString());
+    setCategory(product.category ?? "");
   }
 
   // 🗑️ EXCLUIR
-  function handleDelete(id: number) {
+  async function handleDelete(id: number) {
     if (!confirm("Deseja excluir este produto?")) return;
-    setProducts(prev => prev.filter(p => p.id !== id));
+
+    await fetch(`/api/products/${id}`, {
+      method: "DELETE",
+    });
+
+    loadProducts();
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">
-        Gerenciar Produtos
-      </h1>
+      <h1 className="text-3xl font-bold mb-6">Gerenciar Produtos</h1>
 
       {/* FORM */}
       <form
@@ -130,11 +137,33 @@ export default function AdminProductsPage() {
           className="p-3 rounded bg-zinc-800"
         />
 
-        {uploading && (
-          <p className="text-sm text-yellow-400">
-            Carregando imagem...
-          </p>
-        )}
+        <input
+          type="number"
+          placeholder="Preço (R$)"
+          value={price}
+          onChange={e => setPrice(e.target.value)}
+          className="p-3 rounded bg-zinc-800"
+        />
+
+        <input
+          type="number"
+          placeholder="Estoque"
+          value={stock}
+          onChange={e => setStock(e.target.value)}
+          className="p-3 rounded bg-zinc-800"
+        />
+
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          className="p-3 rounded bg-zinc-800"
+        >
+          <option value="">Categoria</option>
+          <option value="farol-led">Faróis LED</option>
+          <option value="multimidia">Multimídia</option>
+          <option value="eletrica">Elétrica</option>
+          <option value="acabamento">Acabamento</option>
+        </select>
 
         {image && (
           <img
@@ -144,7 +173,10 @@ export default function AdminProductsPage() {
           />
         )}
 
-        <button className="bg-yellow-400 text-black py-3 rounded font-bold">
+        <button
+          disabled={loading}
+          className="bg-yellow-400 text-black py-3 rounded font-bold disabled:opacity-50"
+        >
           {editingId ? "Salvar alterações" : "Adicionar produto"}
         </button>
       </form>
@@ -152,10 +184,7 @@ export default function AdminProductsPage() {
       {/* LISTA */}
       <div className="grid md:grid-cols-3 gap-6">
         {products.map(product => (
-          <div
-            key={product.id}
-            className="bg-zinc-900 p-4 rounded-xl"
-          >
+          <div key={product.id} className="bg-zinc-900 p-4 rounded-xl">
             {product.image && (
               <img
                 src={product.image}
@@ -165,11 +194,25 @@ export default function AdminProductsPage() {
             )}
 
             <h3 className="font-bold">{product.name}</h3>
-            <p className="text-sm text-zinc-400 mb-4">
-              {product.description}
+            <p className="text-sm text-zinc-400 mb-4">{product.description}</p>
+
+            <p className="text-sm text-zinc-400">
+              R$ {product.price.toFixed(2)}
             </p>
 
-            <div className="flex gap-3">
+            <p
+              className={`text-sm ${
+                product.stock > 0 ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {product.stock > 0
+                ? `${product.stock} em estoque`
+                : "Sem estoque"}
+            </p>
+
+            <span className="text-xs text-yellow-400">{product.category}</span>
+
+            <div className="flex gap-3 mt-3">
               <button
                 onClick={() => handleEdit(product)}
                 className="flex-1 bg-zinc-700 py-2 rounded"
