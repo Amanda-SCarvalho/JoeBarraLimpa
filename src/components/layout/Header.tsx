@@ -3,11 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCart } from "@/contexts/CartContext";
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { cart } = useCart();
+
+  const totalItems = cart.reduce(
+    (sum, item) => sum + (item.quantity ?? 1),
+    0
+  );
+
 
   // Carregar tema salvo
   useEffect(() => {
@@ -61,6 +69,33 @@ export default function Header() {
 
           {/* Ações */}
           <div className="flex items-center gap-3">
+            {/* 🛒 Carrinho */}
+            <Link
+              href="/carrinho"
+              className="relative flex items-center justify-center
+             h-9 w-9 rounded-full
+             border border-zinc-300 dark:border-zinc-700
+             bg-white dark:bg-zinc-900
+             hover:bg-zinc-100 dark:hover:bg-zinc-800
+             transition"
+            >
+              <span className="text-lg">🛒</span>
+
+              {totalItems > 0 && (
+                <span
+                  className="
+        absolute -top-2 -right-2
+        bg-yellow-400 text-black
+        text-xs font-bold
+        h-5 w-5 flex items-center justify-center
+        rounded-full
+      "
+                >
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+
             {/* Dark mode */}
             <button
               onClick={() => setIsDark((prev) => !prev)}
@@ -182,6 +217,20 @@ export default function Header() {
           <Link href="/">Início</Link>
           <Link href="/catalogo">Catálogo</Link>
           <Link href="/videos">Vídeos</Link>
+
+          <Link
+            href="/carrinho"
+            className="flex items-center justify-between"
+          >
+            <span>Carrinho</span>
+
+            {totalItems > 0 && (
+              <span className="bg-yellow-400 text-black text-sm font-bold px-2 py-1 rounded-full">
+                {totalItems}
+              </span>
+            )}
+          </Link>
+
 
           <Link
             href="https://wa.me/5511985464418"

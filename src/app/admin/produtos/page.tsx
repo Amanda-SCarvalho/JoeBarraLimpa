@@ -16,10 +16,21 @@ export default function AdminProductsPage() {
 
   // 🔄 BUSCAR PRODUTOS
   async function loadProducts() {
+  try {
     const res = await fetch("/api/products");
-    const data = await res.json();
-    setProducts(data);
+
+    if (!res.ok) {
+      throw new Error("Erro ao buscar produtos");
+    }
+
+    const json = await res.json();
+    setProducts(Array.isArray(json.data) ? json.data : []);
+  } catch (error) {
+    console.error(error);
+    setProducts([]);
   }
+}
+
 
   useEffect(() => {
     loadProducts();
@@ -39,51 +50,51 @@ export default function AdminProductsPage() {
 
   // ➕ / ✏️ SALVAR
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name || !description) return;
+  e.preventDefault();
+  if (loading) return;
 
-    setLoading(true);
-
-    if (editingId) {
-      await fetch(`/api/products/${editingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          description,
-          image,
-          price: Number(price),
-          stock: Number(stock),
-          category,
-        }),
-      });
-    } else {
-      await fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          description,
-          image,
-          price: Number(price),
-          stock: Number(stock),
-          category,
-        }),
-      });
-    }
-
-    // resetar formulário
-    setName("");
-    setDescription("");
-    setImage("");
-    setPrice("");
-    setStock("");
-    setCategory("");
-    setEditingId(null);
-    setLoading(false);
-
-    loadProducts();
+  if (!name || !description || !price || !stock) {
+    alert("Preencha todos os campos obrigatórios");
+    return;
   }
+
+  setLoading(true);
+
+  const payload = {
+    name,
+    description,
+    image,
+    price: parseFloat(price),
+    stock: parseInt(stock),
+    category,
+  };
+
+  if (editingId !== null) {
+    await fetch(`/api/products/${editingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } else {
+    await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  setName("");
+  setDescription("");
+  setImage("");
+  setPrice("");
+  setStock("");
+  setCategory("");
+  setEditingId(null);
+  setLoading(false);
+
+  loadProducts();
+}
+
 
   // ✏️ EDITAR
   function handleEdit(product: Product) {
@@ -201,9 +212,8 @@ export default function AdminProductsPage() {
             </p>
 
             <p
-              className={`text-sm ${
-                product.stock > 0 ? "text-green-400" : "text-red-400"
-              }`}
+              className={`text-sm ${product.stock > 0 ? "text-green-400" : "text-red-400"
+                }`}
             >
               {product.stock > 0
                 ? `${product.stock} em estoque`

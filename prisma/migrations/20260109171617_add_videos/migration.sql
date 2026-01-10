@@ -1,0 +1,9 @@
+-- CreateTable
+CREATE TABLE "Video" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "platform" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "thumbnail" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

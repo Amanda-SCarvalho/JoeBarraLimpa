@@ -1,82 +1,43 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// 📥 GET — listar produtos
 export async function GET() {
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+    });
 
-  return NextResponse.json(products);
+    return NextResponse.json({ data: products });
+  } catch (error) {
+    console.error("GET /products error:", error);
+    return NextResponse.json(
+      { data: [], error: "Erro ao buscar produtos" },
+      { status: 500 }
+    );
+  }
 }
 
-// ➕ POST — criar produto
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { name, description, image, price, stock, category } = body;
+  try {
+    const body = await request.json();
 
-  if (!name || !description) {
+    const product = await prisma.product.create({
+      data: {
+        name: body.name,
+        description: body.description,
+        image: body.image || null,
+        price: body.price,
+        stock: body.stock,
+        category: body.category || null,
+      },
+    });
+
+    return NextResponse.json({ data: product }, { status: 201 });
+  } catch (error) {
+    console.error("POST /products error:", error);
     return NextResponse.json(
-      { error: "Nome e descrição são obrigatórios" },
-      { status: 400 }
+      { error: "Erro ao criar produto" },
+      { status: 500 }
     );
   }
-
-  const product = await prisma.product.create({
-    data: {
-      name,
-      description,
-      image,
-      price: Number(price),
-      stock: Number(stock),
-      category,
-    },
-  });
-
-  return NextResponse.json(product);
-}
-
-// ✏️ PUT — atualizar produto
-export async function PUT(request: Request) {
-  const body = await request.json();
-  const { id, name, description, image, price, stock, category } = body;
-
-  if (!id) {
-    return NextResponse.json(
-      { error: "ID do produto é obrigatório" },
-      { status: 400 }
-    );
-  }
-
-  const product = await prisma.product.update({
-    where: { id: Number(id) },
-    data: {
-      ...(name && { name }),
-      ...(description && { description }),
-      ...(image && { image }),
-      ...(price !== undefined && { price: Number(price) }),
-      ...(stock !== undefined && { stock: Number(stock) }),
-      ...(category && { category }),
-    },
-  });
-
-  return NextResponse.json(product);
-}
-
-// 🗑️ DELETE — excluir produto
-export async function DELETE(request: Request) {
-  const { id } = await request.json();
-
-  if (!id) {
-    return NextResponse.json(
-      { error: "ID do produto é obrigatório" },
-      { status: 400 }
-    );
-  }
-
-  await prisma.product.delete({
-    where: { id: Number(id) },
-  });
-
-  return NextResponse.json({ success: true });
 }

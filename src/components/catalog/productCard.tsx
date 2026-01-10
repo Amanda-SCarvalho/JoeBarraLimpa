@@ -1,37 +1,48 @@
+"use client";
+
 import Link from "next/link";
 import { Product } from "@/types/Product";
 
-type Props = {
-  product: Product;
-};
-
-export default function ProductCard({ product }: Props) {
-  const message = encodeURIComponent(
-    `Olá! Gostaria de orçamento para o produto: ${product.name}`
-  );
+export default function ProductCard({ product }: { product: Product }) {
+  const inStock = product.stock > 0;
 
   return (
-    <div className="card flex flex-col">
-      <img
-        src={product.image}
-        alt={product.name}
-        className="h-40 w-full object-cover rounded mb-4"
-      />
+    <div className="bg-zinc-900 p-4 rounded-xl flex flex-col">
+      <Link href={`/produto/${product.id}`}>
+        {product.image && (
+          <img
+            src={product.image}
+            alt={product.name}
+            className="h-44 w-full object-cover rounded mb-3"
+          />
+        )}
 
-      <h3 className="font-semibold text-lg mb-2">
-        {product.name}
-      </h3>
+        <h3 className="font-bold text-lg mb-1">
+          {product.name}
+        </h3>
 
-      <p className="text-sm text-(--color-text-muted) mb-4">
-        {product.description}
+        <p className="text-sm text-zinc-400 line-clamp-2 mb-3">
+          {product.description}
+        </p>
+      </Link>
+
+      <p className="text-xl font-bold text-yellow-400">
+        R$ {product.price.toFixed(2)}
+      </p>
+
+      <p
+        className={`text-sm mb-4 ${
+          inStock ? "text-green-400" : "text-red-400"
+        }`}
+      >
+        {inStock ? `${product.stock} em estoque` : "Indisponível"}
       </p>
 
       <Link
-        href={`https://wa.me/5511985464418?text=${message}`}
-        target="_blank"
-        className="btn-primary mt-auto text-center"
+        href={`/produto/${product.id}`}
+        className="mt-auto bg-yellow-400 text-black py-2 rounded font-bold text-center hover:bg-yellow-500"
       >
-        Solicitar orçamento
+        Ver produto
       </Link>
     </div>
   );

@@ -10,8 +10,10 @@ export default function CatalogPreview() {
   useEffect(() => {
     async function loadProducts() {
       const res = await fetch("/api/products");
-      const data = await res.json();
-      setProducts(data.slice(0, 3));
+      const json = await res.json();
+
+      // ✅ pega o array correto
+      setProducts(Array.isArray(json.data) ? json.data.slice(0, 3) : []);
     }
 
     loadProducts();

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/shared/WhatsAppButton";
+import { CartProvider } from "@/contexts/CartContext";
 
 export const metadata: Metadata = {
   title: {
@@ -22,10 +23,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className="flex min-h-screen flex-col antialiased">
-        <Header />
-        <main className="flex-1 pt-16">{children}</main>
-        <Footer />
-        <WhatsAppButton />
+        <CartProvider>
+          <Header />
+          <main className="flex-1 pt-16">{children}</main>
+          <Footer />
+          <WhatsAppButton />
+        </CartProvider>
       </body>
     </html>
   );

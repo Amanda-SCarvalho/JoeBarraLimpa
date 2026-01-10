@@ -10,8 +10,9 @@ export default function AdminDashboard() {
   async function loadData() {
     try {
       const res = await fetch("/api/products");
-      const data = await res.json();
-      setProducts(data);
+      const json = await res.json();
+      setProducts(json.data ?? []);
+
     } catch (error) {
       console.error("Erro ao carregar produtos", error);
     } finally {

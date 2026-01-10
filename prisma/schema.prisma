@@ -16,3 +16,13 @@ model Product {
   category    String?
   createdAt   DateTime @default(now())
 }
+
+model Video {
+  id        Int      @id @default(autoincrement())
+  platform  String   // instagram | youtube
+  url       String
+  thumbnail String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
