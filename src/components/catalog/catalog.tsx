@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import { Product } from "@/types/Product";
 import { useCart } from "@/contexts/CartContext";
-
+import { CartItem } from "@/types/CartItem";
 
 export default function Catalog() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();
-
+  const { addToCart, cart } = useCart();
 
   useEffect(() => {
     async function loadProducts() {
@@ -40,7 +39,12 @@ export default function Catalog() {
       </h1>
 
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {products.map(product => {
+        {products.map((product) => {
+          const cartItem = cart.find(item => item.id === product.id);
+          const isMaxStock = cartItem
+            ? cartItem.quantity >= product.stock
+            : false;
+
           const inStock = product.stock > 0;
 
           return (
@@ -66,7 +70,7 @@ export default function Catalog() {
 
               {/* PREÇO */}
               <p className="text-xl font-bold text-yellow-400 mb-1">
-                R$ {product.price.toFixed(2)}
+                R$ {Number(product.price).toFixed(2)}
               </p>
 
               {/* ESTOQUE */}
@@ -81,7 +85,7 @@ export default function Catalog() {
 
               {/* BOTÃO */}
               <button
-                disabled={!inStock}
+                disabled={!inStock || isMaxStock}
                 onClick={() => addToCart(product)}
                 className="
           mt-auto
@@ -92,12 +96,11 @@ export default function Catalog() {
           disabled:cursor-not-allowed
         "
               >
-                Adicionar ao carrinho
+                {isMaxStock ? "Estoque máximo" : "Adicionar ao carrinho"}
               </button>
             </div>
           );
         })}
-
       </div>
     </section>
   );
