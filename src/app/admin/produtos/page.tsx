@@ -64,20 +64,20 @@ export default function AdminProductsPage() {
     name,
     description,
     image,
-    price: parseFloat(price),
-    stock: parseInt(stock),
+    price: Number.parseFloat(price),
+    stock: Number.parseInt(stock),
     category,
   };
 
-  if (editingId !== null) {
-    await fetch(`/api/products/${editingId}`, {
-      method: "PUT",
+  if (editingId === null) {
+    await fetch("/api/products", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
   } else {
-    await fetch("/api/products", {
-      method: "POST",
+    await fetch(`/api/products/${editingId}`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });

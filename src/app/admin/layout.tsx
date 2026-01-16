@@ -6,9 +6,9 @@ import Link from "next/link";
 
 export default function AdminLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,6 +47,22 @@ export default function AdminLayout({
             }`}
           >
             📦 Produtos
+          </Link>
+          <Link
+            href="/admin/videos"
+            className={`hover:text-yellow-400 ${
+              pathname.startsWith("/admin/videos") && "text-yellow-400"
+            }`}
+          >
+            📹 Videos
+          </Link>
+          <Link
+            href="/admin/settings"
+            className={`hover:text-yellow-400 ${
+              pathname.startsWith("/admin/settings") && "text-yellow-400"
+            }`}
+          >
+            ⚙️ Settings
           </Link>
         </nav>
 

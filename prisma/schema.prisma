@@ -26,3 +26,21 @@ model Video {
   createdAt DateTime @default(now())
 }
 
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+
+

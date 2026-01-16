@@ -4,17 +4,27 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
 
-    if (password === "admin123") {
-      localStorage.setItem("admin-auth", "true");
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+
+    setLoading(false);
+
+    if (res.ok) {
       router.replace("/admin");
     } else {
-      alert("Senha incorreta");
+      alert("Usuário ou senha inválidos");
     }
   }
 
@@ -29,15 +39,26 @@ export default function AdminLoginPage() {
         </h1>
 
         <input
+          type="text"
+          placeholder="Usuário"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          className="w-full p-3 rounded bg-zinc-800 mb-4"
+        />
+
+        <input
           type="password"
           placeholder="Senha"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full p-3 rounded bg-zinc-800 mb-4"
+          className="w-full p-3 rounded bg-zinc-800 mb-6"
         />
 
-        <button className="w-full bg-yellow-400 text-black py-3 rounded font-bold">
-          Entrar
+        <button
+          disabled={loading}
+          className="w-full bg-yellow-400 text-black py-3 rounded font-bold disabled:opacity-50"
+        >
+          {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
     </div>
