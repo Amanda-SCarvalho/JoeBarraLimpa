@@ -1,117 +1,133 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
-declare global {
-  interface Window {
-    instgrm?: {
-      Embeds: {
-        process: () => void;
-      };
-    };
+type Video = {
+  id: number;
+  platform: "youtube" | "instagram";
+  url?: string;
+  thumbnail: string;
+};
+
+function getYoutubeEmbed(input?: string) {
+  if (!input) return "";
+
+  if (!input.includes("http")) {
+    return `https://www.youtube.com/embed/${input}`;
   }
+
+  const regex =
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/;
+
+  const match = regex.exec(input);
+
+  return match
+    ? `https://www.youtube.com/embed/${match[1]}?rel=0`
+    : "";
 }
 
 export default function VideosPreview() {
-  const [mounted, setMounted] = useState(false);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-
-    // Se o script já existir, só processa
-    if (window.instgrm) {
-      window.instgrm.Embeds.process();
-      return;
-    }
-
-    // Cria o script do Instagram
-    const script = document.createElement("script");
-    script.src = "https://www.instagram.com/embed.js";
-    script.async = true;
-
-    script.onload = () => {
-      if (window.instgrm) {
-        window.instgrm.Embeds.process();
-      }
-    };
-
-    document.body.appendChild(script);
+    fetch("/api/videos")
+      .then((res) => res.json())
+      .then((data) => setVideos(data))
+      .catch(() => setVideos([]))
+      .finally(() => setLoading(false));
   }, []);
 
+  // 👉 ordem correta
+  const orderedVideos = [
+    ...videos.filter((v) => v.platform === "youtube"),
+    ...videos.filter((v) => v.platform === "instagram"),
+  ];
+
+  // 👉 limite do preview
+  const previewVideos = orderedVideos.slice(0, 2);
+
   return (
-    <section className="section bg-(--color-bg) text(--color-text)">
-      <div className="container">
-        {/* Título */}
-        <h2 className="section-title text-center">
-          Dicas e Conteúdos Técnicos
-        </h2>
+    <section className="py-20 px-6">
+      <h2 className="text-3xl font-bold text-center mb-12">
+        Dicas e Explicações
+      </h2>
 
-        <p className="section-subtitle text-center">
-          Conteúdo prático sobre elétrica e modificações Scania
+      {/* loading */}
+      {loading && (
+        <p className="text-center text-zinc-400">
+          Carregando vídeos...
         </p>
+      )}
 
-        {/* =================
-            YOUTUBE
-           ================= */}
-        <h3 className="text-2xl font-semibold mb-6">
-          🎥 Vídeos completos
-        </h3>
-
-        <div className="grid md:grid-cols-2 gap-6 mb-16">
-          <iframe
-            className="w-full aspect-video rounded-xl"
-            src="https://www.youtube.com/embed/ajyGoSXXCIU"
-            allowFullScreen
-          />
-
-          <iframe
-            className="w-full aspect-video rounded-xl"
-            src="https://www.youtube.com/embed/5vR0yjJXNCo"
-            allowFullScreen
-          />
+      {/* nenhum vídeo */}
+      {!loading && videos.length === 0 && (
+        <div className="text-center text-zinc-400 bg-zinc-900 p-8 rounded-xl max-w-xl mx-auto">
+          <p className="text-lg font-semibold mb-2">
+            Vídeos em manutenção
+          </p>
+          <p className="text-sm">
+            Em breve novos conteúdos estarão disponíveis.
+          </p>
         </div>
+      )}
 
-        {/* =================
-            INSTAGRAM
-           ================= */}
-        <h3 className="text-2xl font-semibold mb-6">
-          ⚡ Dicas rápidas (Instagram)
-        </h3>
+      {/* preview */}
+      {!loading && previewVideos.length > 0 && (
+        <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+          {previewVideos.map((video) => (
+            <div
+              key={video.id}
+              className="bg-zinc-900 rounded-xl overflow-hidden shadow-lg"
+            >
+              {/* ▶️ YouTube */}
+              {video.platform === "youtube" && (
+                <iframe
+                  className="w-full h-64"
+                  src={getYoutubeEmbed(video.url)}
+                  title={`Vídeo YouTube ${video.id}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
 
-        {mounted && (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12">
-            <blockquote
-              className="instagram-media rounded-xl overflow-hidden"
-              data-instgrm-permalink="https://www.instagram.com/reel/DBw7UClpgCT/"
-              data-instgrm-version="14"
-            />
+              {/* 📸 Instagram */}
+              {video.platform === "instagram" && (
+                <a
+                  href={video.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative block"
+                >
+                  <img
+                    src={video.thumbnail}
+                    alt="Capa do Reel"
+                    className="w-full h-64 object-cover"
+                  />
 
-            <blockquote
-              className="instagram-media rounded-xl overflow-hidden"
-              data-instgrm-permalink="https://www.instagram.com/reel/DTAUFkPkZk9/"
-              data-instgrm-version="14"
-            />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition">
+                    <span className="bg-yellow-400 text-black px-4 py-2 rounded-full font-bold">
+                      Ver no Instagram →
+                    </span>
+                  </div>
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-            <blockquote
-              className="instagram-media rounded-xl overflow-hidden"
-              data-instgrm-permalink="https://www.instagram.com/reel/DR63lmikRbG/"
-              data-instgrm-version="14"
-            />
-          </div>
-        )}
-
-        {/* CTA */}
-        <div className="text-center">
-          <Link
-            href="https://www.instagram.com/SEU_INSTAGRAM"
-            target="_blank"
-            className="btn-primary"
+      {/* botão ver todos */}
+      {!loading && videos.length > previewVideos.length && (
+        <div className="mt-12 text-center">
+          <a
+            href="/videos"
+            className="inline-block bg-yellow-400 text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition"
           >
-            👉 Veja mais dicas no Instagram
-          </Link>
+            Ver todos os vídeos
+          </a>
         </div>
-      </div>
+      )}
     </section>
   );
 }

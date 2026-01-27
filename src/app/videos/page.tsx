@@ -14,9 +14,15 @@ export default function Videos() {
 
   useEffect(() => {
     fetch("/api/videos")
-      .then(res => res.json())
-      .then(data => setVideos(data));
+      .then((res) => res.json())
+      .then((data) => setVideos(data));
   }, []);
+
+  // 👉 ordenar: YouTube primeiro, Instagram depois
+  const sortedVideos = [
+    ...videos.filter((v) => v.platform === "youtube"),
+    ...videos.filter((v) => v.platform === "instagram"),
+  ];
 
   return (
     <section className="py-20 px-6">
@@ -24,18 +30,18 @@ export default function Videos() {
         Dicas e Explicações
       </h2>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {videos.map(video => {
-          // ▶️ YOUTUBE → iframe
+      <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+        {sortedVideos.map((video) => {
+          /* ▶️ YOUTUBE */
           if (video.platform === "youtube") {
             return (
               <div
                 key={video.id}
-                className="aspect-video rounded-xl overflow-hidden shadow"
+                className="aspect-video rounded-xl overflow-hidden shadow-lg bg-black"
               >
                 <iframe
                   className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${video.url}`}
+                  src={`https://www.youtube.com/embed/${video.url}?rel=0`}
                   title="YouTube video"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -44,27 +50,25 @@ export default function Videos() {
             );
           }
 
-          // 📸 INSTAGRAM → capa + link
+          /* 📸 INSTAGRAM */
           return (
             <a
               key={video.id}
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-zinc-900 rounded-xl overflow-hidden hover:scale-[1.02] transition"
+              className="group relative rounded-xl overflow-hidden shadow-lg bg-zinc-900 hover:scale-[1.02] transition"
             >
               <img
                 src={video.thumbnail}
-                alt="Instagram vídeo"
-                className="w-full h-64 object-cover"
+                alt="Vídeo do Instagram"
+                className="w-full h-72 object-cover"
               />
 
-              <div className="p-4 flex items-center justify-between">
-                <span className="text-sm text-zinc-400">
-                  Ver no Instagram
-                </span>
-                <span className="text-yellow-400 text-sm font-semibold">
-                  Abrir →
+              {/* overlay */}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-100 group-hover:bg-black/50 transition">
+                <span className="bg-yellow-400 text-black px-5 py-2 rounded-full font-semibold">
+                  Ver no Instagram →
                 </span>
               </div>
             </a>

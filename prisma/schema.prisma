@@ -35,6 +35,14 @@ model Admin {
   createdAt DateTime @default(now())
 }
 
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  service   String
+  comment   String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
 
 
 enum Role {

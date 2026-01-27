@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
+import Image from "next/image";
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
@@ -11,11 +12,7 @@ export default function Header() {
   const pathname = usePathname();
   const { cart } = useCart();
 
-  const totalItems = cart.reduce(
-    (sum, item) => sum + (item.quantity ?? 1),
-    0
-  );
-
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
   // Carregar tema salvo
   useEffect(() => {
@@ -39,23 +36,33 @@ export default function Header() {
       <header
         className={`
     fixed top-0 w-full
-    border-b border-zinc-200 dark:border-zinc-800
-    bg-white/80 dark:bg-black/80
-    backdrop-blur
+    border-b border-zinc-300 dark:border-zinc-800
+    bg-white dark:bg-zinc-950
+    shadow-sm dark:shadow-none
     transition-all
     ${menuOpen ? "z-60" : "z-50"}
+  
   `}
       >
-
         <div className="container flex h-16 items-center justify-between">
           {/* Logo */}
-          <h1 className="text-2xl font-bold">
-            <span className="text-yellow-400">Joe</span>{" "}
-            <span>BarraLimpa</span>
-          </h1>
+          <Link href="/" className="flex items-center gap-2">
+            {/* Logo sempre visível */}
+            <Image
+              src="/logo.png"
+              alt="Joe Barra Limpa"
+              width={40}
+              height={40}
+              priority
+            />
 
+            {/* Nome só no desktop */}
+            <span className="hidden md:inline text-2xl font-bold text-black dark:text-white">
+              Joe <span className="text-yellow-400">Barra</span> Limpa
+            </span>
+          </Link>
           {/* Navegação Desktop */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-700 dark:text-zinc-300 ">
             <Link href="/" className="hover:text-yellow-500 transition">
               Início
             </Link>
@@ -110,18 +117,20 @@ export default function Header() {
               "
             >
               <span
-                className={`absolute transition-all ${isDark
-                  ? "opacity-100 scale-100 rotate-0"
-                  : "opacity-0 scale-75 rotate-90"
-                  }`}
+                className={`absolute transition-all ${
+                  isDark
+                    ? "opacity-100 scale-100 rotate-0"
+                    : "opacity-0 scale-75 rotate-90"
+                }`}
               >
                 ☀️
               </span>
               <span
-                className={`absolute transition-all ${!isDark
-                  ? "opacity-100 scale-100 rotate-0"
-                  : "opacity-0 scale-75 -rotate-90"
-                  }`}
+                className={`absolute transition-all ${
+                  !isDark
+                    ? "opacity-100 scale-100 rotate-0"
+                    : "opacity-0 scale-75 -rotate-90"
+                }`}
               >
                 🌙
               </span>
@@ -190,9 +199,6 @@ export default function Header() {
                 </svg>
               )}
             </button>
-
-
-
           </div>
         </div>
       </header>
@@ -204,24 +210,22 @@ export default function Header() {
 
       {/* Menu Mobile */}
       <aside
-        className={`
+         className={`
     fixed top-0 right-0 z-50 h-full w-72
-    bg-white dark:bg-black
-    border-l border-zinc-200 dark:border-zinc-800
+    bg-white dark:bg-zinc-950
+    text-zinc-900 dark:text-zinc-100
+    border-l border-zinc-300 dark:border-zinc-800
+    shadow-xl
     transform transition-transform duration-300
     ${menuOpen ? "translate-x-0" : "translate-x-full"}
   `}
       >
-
         <nav className="flex flex-col gap-6 p-6 mt-16 text-lg font-medium">
           <Link href="/">Início</Link>
           <Link href="/catalogo">Catálogo</Link>
           <Link href="/videos">Vídeos</Link>
 
-          <Link
-            href="/carrinho"
-            className="flex items-center justify-between"
-          >
+          <Link href="/carrinho" className="flex items-center justify-between">
             <span>Carrinho</span>
 
             {totalItems > 0 && (
@@ -230,7 +234,6 @@ export default function Header() {
               </span>
             )}
           </Link>
-
 
           <Link
             href="https://wa.me/5511985464418"

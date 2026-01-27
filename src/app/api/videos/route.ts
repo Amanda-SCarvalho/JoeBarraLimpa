@@ -1,101 +1,97 @@
 import { NextResponse } from "next/server";
+import { writeFile } from "node:fs/promises";
+import path from "node:path";
 import { prisma } from "@/lib/prisma";
 
-// 📥 GET — vídeos ativos
+/* =======================
+   GET - listar vídeos
+======================= */
 export async function GET() {
   const videos = await prisma.video.findMany({
-    where: { active: true },
     orderBy: { createdAt: "desc" },
   });
 
   return NextResponse.json(videos);
 }
 
-// POST — criar vídeo
-function extractYouTubeId(url: string): string | null {
-  try {
-    const parsedUrl = new URL(url);
-
-    if (parsedUrl.hostname.includes("youtu.be")) {
-      return parsedUrl.pathname.slice(1);
-    }
-
-    if (parsedUrl.searchParams.get("v")) {
-      return parsedUrl.searchParams.get("v");
-    }
-
-    if (parsedUrl.pathname.includes("/embed/")) {
-      return parsedUrl.pathname.split("/embed/")[1];
-    }
-
-    if (parsedUrl.pathname.includes("/shorts/")) {
-      return parsedUrl.pathname.split("/shorts/")[1];
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
+/* =======================
+   POST - criar vídeo
+======================= */
 export async function POST(req: Request) {
-  const { platform, url, thumbnail } = await req.json();
+  const formData = await req.formData();
 
-  let finalUrl = url;
-  let finalThumbnail = thumbnail;
+  const platform = formData.get("platform") as "youtube" | "instagram";
+  const url = formData.get("url") as string;
+  const file = formData.get("thumbnail") as File | null;
 
-  if (platform === "youtube") {
-    const videoId = extractYouTubeId(url);
+  let thumbnail = "";
 
-    if (!videoId) {
+  // 👉 Instagram precisa de capa
+  if (platform === "instagram") {
+    if (!file) {
       return NextResponse.json(
-        { error: "URL do YouTube inválida" },
+        { error: "Thumbnail obrigatória para Instagram" },
         { status: 400 }
       );
     }
 
-    finalUrl = videoId;
-    finalThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const fileName = `${Date.now()}-${file.name}`;
+    const uploadPath = path.join(process.cwd(), "public/uploads", fileName);
+
+    await writeFile(uploadPath, buffer);
+    thumbnail = `/uploads/${fileName}`;
   }
 
-  if (platform === "instagram" && !finalThumbnail) {
-    return NextResponse.json(
-      { error: "Thumbnail obrigatório para Instagram" },
-      { status: 400 }
-    );
+  // 👉 YouTube usa thumb automática
+  if (platform === "youtube") {
+    const videoId = url.split("v=")[1]?.split("&")[0];
+    thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   }
 
   const video = await prisma.video.create({
     data: {
       platform,
-      url: finalUrl,
-      thumbnail: finalThumbnail,
+      url,
+      thumbnail,
+      active: true,
     },
   });
 
   return NextResponse.json(video);
 }
 
-// PUT — editar vídeo
+/* =======================
+   PUT - editar / ativar
+======================= */
 export async function PUT(req: Request) {
   const body = await req.json();
-  const { id } = body;
-
-  if (!id) {
-    return NextResponse.json({ error: "ID obrigatório" }, { status: 400 });
-  }
-
-  const data: any = {};
-
-  if (body.platform) data.platform = body.platform;
-  if (body.url) data.url = body.url;
-  if (body.thumbnail) data.thumbnail = body.thumbnail;
-  if (typeof body.active === "boolean") data.active = body.active;
 
   const video = await prisma.video.update({
-    where: { id },
-    data,
+    where: { id: body.id },
+    data: {
+      url: body.url,
+      platform: body.platform,
+      active: body.active,
+    },
   });
 
   return NextResponse.json(video);
+}
+
+export async function DELETE(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return new Response("ID não informado", { status: 400 });
+  }
+
+  await prisma.video.delete({
+    where: { id: Number.parseInt(id) },
+  });
+
+  return new Response(null, { status: 204 });
 }

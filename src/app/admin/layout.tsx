@@ -57,6 +57,14 @@ export default function AdminLayout({
             📹 Videos
           </Link>
           <Link
+            href="/admin/testimonials"
+            className={`hover:text-yellow-400 ${
+              pathname.startsWith("/admin/testimonials") && "text-yellow-400"
+            }`}
+          >
+            📝 Testimonials
+          </Link>
+          <Link
             href="/admin/settings"
             className={`hover:text-yellow-400 ${
               pathname.startsWith("/admin/settings") && "text-yellow-400"

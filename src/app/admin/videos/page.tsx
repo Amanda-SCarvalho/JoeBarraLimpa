@@ -10,24 +10,14 @@ type Video = {
   active: boolean;
 };
 
-function updateVideoField(
-  videos: Video[],
-  videoId: string,
-  updates: Partial<Video>
-): Video[] {
-  return videos.map((item) =>
-    item.id === videoId ? { ...item, ...updates } : item
-  );
-}
-
 export default function AdminVideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // estados do formulário de criação
-  const [platform, setPlatform] = useState<"youtube" | "instagram">("youtube");
+  const [platform, setPlatform] =
+    useState<"youtube" | "instagram">("youtube");
   const [url, setUrl] = useState("");
-  const [thumbnail, setThumbnail] = useState("");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
   async function loadVideos() {
     const res = await fetch("/api/videos");
@@ -50,53 +40,134 @@ export default function AdminVideosPage() {
     loadVideos();
   }
 
-  async function saveEdit(video: Video) {
-    await fetch("/api/videos", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(video),
+  async function deleteVideo(id: string) {
+    if (!confirm("Tem certeza que deseja excluir este vídeo?")) return;
+
+    await fetch(`/api/videos?id=${id}`, {
+      method: "DELETE",
     });
-    setEditingId(null);
+
     loadVideos();
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    let finalUrl = url;
-    if (platform === "youtube") {
-      if (finalUrl.includes("watch?v=")) {
-        finalUrl = finalUrl.replace("watch?v=", "embed/");
-      }
-      if (finalUrl.includes("youtu.be/")) {
-        const videoId = finalUrl.split("youtu.be/")[1];
-        finalUrl = `https://www.youtube.com/embed/${videoId}`;
-      }
+    const formData = new FormData();
+    formData.append("platform", platform);
+    formData.append("url", url);
+
+    if (platform === "instagram" && thumbnailFile) {
+      formData.append("thumbnail", thumbnailFile);
     }
 
     await fetch("/api/videos", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ platform, url: finalUrl, thumbnail }),
+      body: formData,
     });
 
     setUrl("");
-    setThumbnail("");
+    setThumbnailFile(null);
     loadVideos();
+  }
+
+  async function saveEdit(video: Video) {
+    await fetch("/api/videos", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: video.id,
+        url: video.url,
+      }),
+    });
+
+    setEditingId(null);
+    loadVideos();
+  }
+
+  const instagramVideos = videos.filter(
+    (video) => video.platform === "instagram"
+  );
+  const youtubeVideos = videos.filter(
+    (video) => video.platform === "youtube"
+  );
+
+  function renderVideos(list: Video[]) {
+    return (
+      <div className="grid md:grid-cols-3 gap-6">
+        {list.map((video) => (
+          <div
+            key={video.id}
+            className={`bg-zinc-900 p-4 rounded-xl ${
+              video.active ? "" : "opacity-50"
+            }`}
+          >
+            <img
+              src={video.thumbnail}
+              className="h-40 w-full object-cover rounded mb-3"
+            />
+
+            <p className="text-xs text-zinc-400 truncate mb-3">
+              {video.url}
+            </p>
+
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() =>
+                  setEditingId(editingId === video.id ? null : video.id)
+                }
+                className="flex-1 bg-zinc-700 py-2 rounded text-sm"
+              >
+                {editingId === video.id ? "Cancelar" : "Editar"}
+              </button>
+
+              <button
+                onClick={() => deleteVideo(video.id)}
+                className="flex-1 bg-red-600 py-2 rounded text-sm font-semibold"
+              >
+                Excluir
+              </button>
+            </div>
+
+            {editingId === video.id && (
+              <button
+                onClick={() => saveEdit(video)}
+                className="w-full bg-green-500 text-black py-2 rounded text-sm font-semibold mb-2"
+              >
+                Salvar alterações
+              </button>
+            )}
+
+            <button
+              onClick={() => toggleActive(video)}
+              className={`w-full py-2 rounded font-semibold ${
+                video.active
+                  ? "bg-red-500 text-black"
+                  : "bg-yellow-400 text-black"
+              }`}
+            >
+              {video.active ? "Desativar" : "Ativar"}
+            </button>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Vídeos</h1>
 
-      {/* Formulário de criação */}
+      {/* Criar */}
       <form
         onSubmit={handleSubmit}
         className="bg-zinc-900 p-6 rounded-xl max-w-xl grid gap-4 mb-10"
       >
         <select
           value={platform}
-          onChange={(e) => setPlatform(e.target.value as "youtube" | "instagram")}
+          onChange={(e) =>
+            setPlatform(e.target.value as "youtube" | "instagram")
+          }
           className="p-3 rounded bg-zinc-800"
         >
           <option value="youtube">YouTube</option>
@@ -112,9 +183,11 @@ export default function AdminVideosPage() {
 
         {platform === "instagram" && (
           <input
-            placeholder="URL da imagem de capa"
-            value={thumbnail}
-            onChange={(e) => setThumbnail(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              setThumbnailFile(e.target.files?.[0] ?? null)
+            }
             className="p-3 rounded bg-zinc-800"
           />
         )}
@@ -124,102 +197,13 @@ export default function AdminVideosPage() {
         </button>
       </form>
 
-      {/* Listagem e edição */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {videos.map((video) => {
-          const isEditing = editingId === video.id;
-          return (
-            <div
-              key={video.id}
-              className={`bg-zinc-900 p-4 rounded-xl ${
-                !video.active && !isEditing ? "opacity-50" : ""
-              }`}
-            >
-              <img
-                src={video.thumbnail}
-                alt={`Capa do vídeo ${video.platform}`}
-                className="h-40 w-full object-cover rounded mb-3"
-              />
+      {/* Instagram */}
+      <h2 className="text-2xl font-bold mb-4">Instagram</h2>
+      {renderVideos(instagramVideos)}
 
-              {isEditing ? (
-                <>
-                  {/* edição */}
-                  <select
-                    value={video.platform}
-                    onChange={(e) =>
-                      setVideos((v) =>
-                        updateVideoField(v, video.id, {
-                          platform: e.target.value as any,
-                        })
-                      )
-                    }
-                    className="w-full p-2 bg-zinc-800 rounded mb-2"
-                  >
-                    <option value="youtube">YouTube</option>
-                    <option value="instagram">Instagram</option>
-                  </select>
-
-                  <input
-                    value={video.url}
-                    onChange={(e) =>
-                      setVideos((v) =>
-                        updateVideoField(v, video.id, { url: e.target.value })
-                      )
-                    }
-                    className="w-full p-2 bg-zinc-800 rounded mb-2"
-                  />
-
-                  {video.platform === "instagram" && (
-                    <input
-                      value={video.thumbnail}
-                      onChange={(e) =>
-                        setVideos((v) =>
-                          updateVideoField(v, video.id, {
-                            thumbnail: e.target.value,
-                          })
-                        )
-                      }
-                      className="w-full p-2 bg-zinc-800 rounded mb-2"
-                    />
-                  )}
-
-                  <button
-                    onClick={() => saveEdit(video)}
-                    className="w-full bg-green-500 text-black py-2 rounded mb-2"
-                  >
-                    Salvar
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm capitalize">{video.platform}</p>
-                  <p className="text-xs text-zinc-400 truncate">{video.url}</p>
-                </>
-              )}
-
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => setEditingId(isEditing ? null : video.id)}
-                  className="flex-1 bg-zinc-700 py-2 rounded text-sm"
-                >
-                  {isEditing ? "Cancelar" : "Editar"}
-                </button>
-
-                <button
-                  onClick={() => toggleActive(video)}
-                  className={`flex-1 py-2 rounded text-sm font-semibold ${
-                    video.active
-                      ? "bg-red-500 text-black"
-                      : "bg-yellow-400 text-black"
-                  }`}
-                >
-                  {video.active ? "Desativar" : "Ativar"}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* YouTube */}
+      <h2 className="text-2xl font-bold mt-10 mb-4">YouTube</h2>
+      {renderVideos(youtubeVideos)}
     </div>
   );
 }

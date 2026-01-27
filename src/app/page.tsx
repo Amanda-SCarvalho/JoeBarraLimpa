@@ -4,6 +4,7 @@ import CatalogPreview from "@/components/home/CatalogPreview";
 import VideosPreview from "@/components/home/VideosPreview";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/shared/CTA";
+import ContactAndTestimonialForm from "@/components/home/ContactAndTestimonialForm";
 
 export default function Home() {
   return (
@@ -22,6 +23,9 @@ export default function Home() {
 
       {/* Depoimentos */}
       <Testimonials />
+
+      {/* Contato */}
+      <ContactAndTestimonialForm />
 
       {/* Chamada final para orçamento */}
       <CTA
