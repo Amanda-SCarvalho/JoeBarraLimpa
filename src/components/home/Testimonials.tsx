@@ -1,9 +1,13 @@
 // components/home/Testimonials.tsx
 import { prisma } from "@/lib/prisma";
-import type { Testimonial } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+
+type TestimonialItem = Prisma.PromiseReturnType<
+  typeof prisma.testimonial.findMany
+>[number];
 
 export default async function Testimonials() {
-  const testimonials: Testimonial[] = await prisma.testimonial.findMany({
+  const testimonials: TestimonialItem[] = await prisma.testimonial.findMany({
     where: { approved: true },
     orderBy: { createdAt: "desc" },
   });
@@ -17,7 +21,7 @@ export default async function Testimonials() {
         <h2 className="section-title mt-5">O que os clientes dizem</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
-          {testimonials.map((item: Testimonial) => (
+          {testimonials.map((item: TestimonialItem) => (
             <div key={item.id} className="card">
               <p className="italic text-(--color-text-muted)">
                 &ldquo;{item.comment}&rdquo;
