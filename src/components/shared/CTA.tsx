@@ -4,7 +4,7 @@ interface CTAProps {
   buttonText: string;
 }
 
-export default function CTA({ title, description, buttonText }: CTAProps) {
+export default function CTA({ title, description, buttonText }: Readonly<CTAProps>) {
   return (
     <section className="section-alt">
       <div className="container text-center">
@@ -14,7 +14,7 @@ export default function CTA({ title, description, buttonText }: CTAProps) {
           {description}
         </p>
 
-        <a href="#" className="btn-primary mb-10 mt-6 inline-block">
+        <a href="https://wa.me/5511985464418" className="btn-primary mb-10 mt-6 inline-block">
           {buttonText}
         </a>
       </div>
