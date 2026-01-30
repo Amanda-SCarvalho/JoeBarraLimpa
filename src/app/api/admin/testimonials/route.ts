@@ -2,23 +2,25 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const data = await prisma.testimonial.findMany({
-    where: { approved: false },
-    orderBy: { createdAt: "desc" },
+  const testimonials = await prisma.testimonial.findMany({
+    orderBy: { id: "desc" },
   });
-  return NextResponse.json(data);
+
+  return NextResponse.json(testimonials);
 }
+
 
 export async function PUT(req: Request) {
-  const { id } = await req.json();
+  const { id, approved } = await req.json();
 
-  await prisma.testimonial.update({
+  const testimonial = await prisma.testimonial.update({
     where: { id },
-    data: { approved: true },
+    data: { approved },
   });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json(testimonial);
 }
+
 
 export async function DELETE(req: Request) {
   const { id } = await req.json();

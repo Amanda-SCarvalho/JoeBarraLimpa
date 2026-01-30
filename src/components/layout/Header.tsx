@@ -127,9 +127,9 @@ export default function Header() {
               </span>
               <span
                 className={`absolute transition-all ${
-                  !isDark
-                    ? "opacity-100 scale-100 rotate-0"
-                    : "opacity-0 scale-75 -rotate-90"
+                  isDark
+                    ? "opacity-0 scale-75 -rotate-90"
+                    : "opacity-100 scale-100 rotate-0"
                 }`}
               >
                 🌙

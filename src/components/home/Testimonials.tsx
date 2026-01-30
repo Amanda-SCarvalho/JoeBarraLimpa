@@ -13,9 +13,9 @@ export default async function Testimonials() {
   return (
     <section className="section-alt">
       <div className="container">
-        <h2 className="section-title">O que os clientes dizem</h2>
+        <h2 className="section-title mt-5">O que os clientes dizem</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ">
           {testimonials.map((item) => (
             <div key={item.id} className="card">
               <p className="italic text-(--color-text-muted)">
