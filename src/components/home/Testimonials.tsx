@@ -1,11 +1,19 @@
 // components/home/Testimonials.tsx
 import { prisma } from "@/lib/prisma";
 
+type TestimonialItem = {
+  id: number;
+  name: string;
+  service: string;
+  comment: string;
+};
+
 export default async function Testimonials() {
-  const testimonials = await prisma.testimonial.findMany({
-    where: { approved: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const testimonials: TestimonialItem[] =
+    await prisma.testimonial.findMany({
+      where: { approved: true },
+      orderBy: { createdAt: "desc" },
+    });
 
   if (testimonials.length === 0) return null;
 
