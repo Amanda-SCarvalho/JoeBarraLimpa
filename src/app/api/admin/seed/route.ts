@@ -1,4 +1,6 @@
 // app/api/admin/seed/route.ts
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/lib/auth";
 import {prisma} from "@/lib/prisma";
