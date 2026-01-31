@@ -1,5 +1,7 @@
 // app/api/admin/login/route.ts
+
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { comparePassword } from "@/lib/auth";
@@ -16,7 +18,7 @@ export async function POST(req: Request) {
   if (!admin) {
     return NextResponse.json(
       { error: "Usuário ou senha inválidos" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -25,17 +27,18 @@ export async function POST(req: Request) {
   if (!valid) {
     return NextResponse.json(
       { error: "Usuário ou senha inválidos" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
-  (await cookies()).set("admin_session", String(admin.id), {
+  const cookieStore = cookies();
+
+  cookieStore.set("admin_session", String(admin.id), {
     httpOnly: true,
     sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 8, // 8 horas
+    maxAge: 60 * 60 * 8,
   });
-
   return NextResponse.json({ success: true });
 }
