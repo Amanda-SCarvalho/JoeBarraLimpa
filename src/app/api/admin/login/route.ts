@@ -1,3 +1,4 @@
+// app/api/admin/login/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
@@ -28,14 +29,13 @@ export async function POST(req: Request) {
     );
   }
 
-  (await cookies()).set("admin_session", admin.id, {
-  httpOnly: true,
-  sameSite: "strict",
-  secure: process.env.NODE_ENV === "production",
-  path: "/",
-  maxAge: 60 * 60 * 8, // 8 horas
-});
-
+  (await cookies()).set("admin_session", String(admin.id), {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 8, // 8 horas
+  });
 
   return NextResponse.json({ success: true });
 }
