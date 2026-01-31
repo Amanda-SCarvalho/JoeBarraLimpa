@@ -3,9 +3,16 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { hashPassword } from "@/lib/auth";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function POST() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Seed desabilitado em produção" },
+      { status: 403 }
+    );
+  }
+
   const hashedPassword = await hashPassword("admin123");
 
   await prisma.admin.create({
