@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
     setLoading(false);
 
     if (res.ok) {
-      router.replace("/admin");
+      router.push("/admin");
     } else {
       alert("Usuário ou senha inválidos");
     }
