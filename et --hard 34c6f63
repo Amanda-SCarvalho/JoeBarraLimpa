@@ -1,0 +1,33 @@
+[33mf2d48c0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m teste7
+[33m9b62d0e[m teste6
+[33mf3181ae[m teste5
+[33m5f20e59[m teste4
+[33m5497ad8[m teste3
+[33m1256e84[m teste2
+[33mf022af5[m teste1
+[33m228b77e[m outros ajustes
+[33md0e132f[m alterações Neon
+[33m686e450[m Configure Neon database
+[33m34c6f63[m add postinstall
+[33m59f6824[m exclusão de data products
+[33mb0475cb[m mais alterações
+[33m1767ad9[m outras alterações
+[33m76a2971[m novos ajustes
+[33ma549e2c[m ajuste no testimonials
+[33m9e91240[m pequenas correções
+[33mc38fec0[m atualizações
+[33m55091ba[m Criando area de contato e aprovação de comentario no admin
+[33mbda1014[m ajustes da area de admin e add area de testimonials
+[33mf353a2e[m configuração de segurança
+[33m56dc9ae[m aprimorar gerenciamento de carrinho com controle de quantidade e integração ao WhatsApp
+[33m479c507[m feat: adicionar gerenciamento de carrinho e integração com vídeos
+[33mdeef477[m feat: initialize Prisma configuration and create Product model with CRUD operations
+[33mc138754[m criação do crud do catalogo - page admin
+[33mf551664[m ccriação pagina admin
+[33m19f37f0[m Merge branch 'main' of https://github.com/Amanda-SCarvalho/JoeBarraLimpa
+[33mc7b2f1d[m Modificações menu hamburguer
+[33m32ee050[m Revise README with project overview and setup
+[33m099e394[m first commit
+[33m6fe237b[m Primeiro deploy
+[33mbd96e36[m Initial commit
+[33mfb07c16[m Initial commit from Create Next App
