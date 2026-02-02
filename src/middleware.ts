@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const session = req.cookies.get("admin_session");
+  const session = req.cookies.get("admin_session")?.value;
 
   if (!session) {
     return NextResponse.redirect(
@@ -10,7 +10,7 @@ export function middleware(req: NextRequest) {
     );
   }
 
-  return NextResponse.next(); 
+  return NextResponse.next();
 }
 
 export const config = {

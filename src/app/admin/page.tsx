@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Product } from "@/types/Product";
 
+export const dynamic = "force-dynamic";
+
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
