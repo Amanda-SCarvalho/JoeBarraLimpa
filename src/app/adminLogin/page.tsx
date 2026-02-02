@@ -16,6 +16,7 @@ export default function AdminLoginPage() {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", 
       body: JSON.stringify({ username, password }),
     });
 
@@ -34,15 +35,13 @@ export default function AdminLoginPage() {
         onSubmit={handleLogin}
         className="bg-zinc-900 p-8 rounded-xl w-full max-w-sm"
       >
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          Login Admin
-        </h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Login Admin</h1>
 
         <input
           type="text"
           placeholder="Usuário"
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
           className="w-full p-3 rounded bg-zinc-800 mb-4"
         />
 
@@ -50,7 +49,7 @@ export default function AdminLoginPage() {
           type="password"
           placeholder="Senha"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full p-3 rounded bg-zinc-800 mb-6"
         />
 
