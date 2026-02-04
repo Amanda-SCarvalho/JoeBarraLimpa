@@ -24,15 +24,9 @@ export default function AdminProductsPage() {
     loadProducts();
   }
 
-  // 🔄 BUSCAR PRODUTOS
   async function loadProducts() {
     try {
       const res = await fetch("/api/products?admin=true");
-
-      if (!res.ok) {
-        throw new Error("Erro ao buscar produtos");
-      }
-
       const json = await res.json();
       setProducts(Array.isArray(json.data) ? json.data : []);
     } catch (error) {
@@ -45,19 +39,15 @@ export default function AdminProductsPage() {
     loadProducts();
   }, []);
 
-  // 📸 Preview local
   function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setImage(e.target?.result as string);
-    };
+    reader.onload = (e) => setImage(e.target?.result as string);
     reader.readAsDataURL(file);
   }
 
-  // ➕ / ✏️ SALVAR
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (loading) return;
@@ -104,7 +94,6 @@ export default function AdminProductsPage() {
     loadProducts();
   }
 
-  // ✏️ EDITAR
   function handleEdit(product: Product) {
     setEditingId(product.id);
     setName(product.name);
@@ -115,14 +104,10 @@ export default function AdminProductsPage() {
     setCategory(product.category ?? "");
   }
 
-  // 🗑️ EXCLUIR
   async function handleDelete(id: number) {
     if (!confirm("Deseja excluir este produto?")) return;
 
-    await fetch(`/api/products/${id}`, {
-      method: "DELETE",
-    });
-
+    await fetch(`/api/products/${id}`, { method: "DELETE" });
     loadProducts();
   }
 
@@ -213,7 +198,9 @@ export default function AdminProductsPage() {
             )}
 
             <h3 className="font-bold">{product.name}</h3>
-            <p className="text-sm text-zinc-400 mb-4">{product.description}</p>
+            <p className="text-sm text-zinc-400 mb-2">
+              {product.description}
+            </p>
 
             <p className="text-sm text-zinc-400">
               R$ {product.price.toFixed(2)}
@@ -229,17 +216,26 @@ export default function AdminProductsPage() {
                 : "Sem estoque"}
             </p>
 
-            <span className="text-xs text-yellow-400">{product.category}</span>
+            {/* 🔥 AQUI ESTÁ O ALINHAMENTO CORRETO */}
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-yellow-400">
+                {product.category}
+              </span>
 
-            <span
-              className={`text-xs font-bold ${
-                product.published ? "text-green-400" : "text-zinc-500"
-              }`}
-            >
-              {product.published ? "Visível no site" : "Somente no estoque"}
-            </span>
+              <span
+                className={`text-xs font-bold ${
+                  product.published
+                    ? "text-green-400"
+                    : "text-zinc-500"
+                }`}
+              >
+                {product.published
+                  ? "Visível no site"
+                  : "Somente no estoque"}
+              </span>
+            </div>
 
-            <div className="flex gap-3 mt-3">
+            <div className="flex gap-3 mt-4">
               <button
                 onClick={() => handleEdit(product)}
                 className="flex-1 bg-zinc-700 py-2 rounded"
@@ -253,15 +249,18 @@ export default function AdminProductsPage() {
               >
                 Excluir
               </button>
+
               <button
-                onClick={() => togglePublish(product.id, product.published)}
+                onClick={() =>
+                  togglePublish(product.id, product.published)
+                }
                 className={`flex-1 py-2 rounded font-bold ${
                   product.published
                     ? "bg-yellow-400 text-black"
                     : "bg-zinc-700 text-white"
                 }`}
               >
-                {product.published ? "Publicado no site" : "Publicar"}
+                {product.published ? "Publicado" : "Publicar"}
               </button>
             </div>
           </div>
