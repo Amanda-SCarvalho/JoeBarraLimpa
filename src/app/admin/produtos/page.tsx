@@ -198,9 +198,7 @@ export default function AdminProductsPage() {
             )}
 
             <h3 className="font-bold">{product.name}</h3>
-            <p className="text-sm text-zinc-400 mb-2">
-              {product.description}
-            </p>
+            <p className="text-sm text-zinc-400 mb-2">{product.description}</p>
 
             <p className="text-sm text-zinc-400">
               R$ {product.price.toFixed(2)}
@@ -216,22 +214,19 @@ export default function AdminProductsPage() {
                 : "Sem estoque"}
             </p>
 
-            {/* 🔥 AQUI ESTÁ O ALINHAMENTO CORRETO */}
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-yellow-400">
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">
                 {product.category}
               </span>
 
               <span
-                className={`text-xs font-bold ${
+                className={`text-xs font-bold px-2 py-1 rounded-full ${
                   product.published
-                    ? "text-green-400"
-                    : "text-zinc-500"
+                    ? "text-green-400 bg-green-400/10"
+                    : "text-zinc-400 bg-zinc-700"
                 }`}
               >
-                {product.published
-                  ? "Visível no site"
-                  : "Somente no estoque"}
+                {product.published ? "Visível no site" : "Somente no estoque"}
               </span>
             </div>
 
@@ -251,9 +246,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
-                onClick={() =>
-                  togglePublish(product.id, product.published)
-                }
+                onClick={() => togglePublish(product.id, product.published)}
                 className={`flex-1 py-2 rounded font-bold ${
                   product.published
                     ? "bg-yellow-400 text-black"
