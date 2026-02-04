@@ -1,41 +1,39 @@
 "use client";
+
 export const dynamic = "force-dynamic";
 
-import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import {  useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function AdminLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
-  /* ======================
-     THEME (dark / light)
-  ====================== */
-const [theme, setTheme] = useState<"light" | "dark">(() => {
-  if (globalThis.window === undefined) return "dark";
+  // 🔹 Carregar tema salvo (client only)
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    setIsDark(saved === "dark");
+  }, []);
 
-  return (localStorage.getItem("theme") as "light" | "dark") ?? "dark";
-});
+  // 🔹 Aplicar tema
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
-function toggleTheme() {
-  const next = theme === "dark" ? "light" : "dark";
+  // 🔹 Fechar menu ao trocar rota
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
-  setTheme(next);
-  localStorage.setItem("theme", next);
-  document.documentElement.classList.toggle("dark", next === "dark");
-}
-
-
-  /* ======================
-     LOGOUT
-  ====================== */
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/adminLogin");
@@ -43,9 +41,7 @@ function toggleTheme() {
 
   return (
     <div className="min-h-screen flex bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
-      {/* ======================
-          SIDEBAR
-      ====================== */}
+      {/* ================= SIDEBAR ================= */}
       <aside
         className={`
           fixed md:static inset-y-0 left-0 z-40 w-64
@@ -73,58 +69,34 @@ function toggleTheme() {
         </div>
 
         <nav className="flex flex-col gap-4 text-sm">
-          <Link
-            href="/admin"
-            onClick={() => setOpen(false)}
-            className={pathname === "/admin" ? "text-yellow-400" : ""}
-          >
+          <Link href="/admin" className={pathname === "/admin" ? "text-yellow-400" : ""}>
             📊 Dashboard
           </Link>
 
           <Link
             href="/admin/produtos"
-            onClick={() => setOpen(false)}
-            className={
-              pathname.startsWith("/admin/produtos")
-                ? "text-yellow-400"
-                : ""
-            }
+            className={pathname.startsWith("/admin/produtos") ? "text-yellow-400" : ""}
           >
             📦 Produtos
           </Link>
 
           <Link
             href="/admin/videos"
-            onClick={() => setOpen(false)}
-            className={
-              pathname.startsWith("/admin/videos")
-                ? "text-yellow-400"
-                : ""
-            }
+            className={pathname.startsWith("/admin/videos") ? "text-yellow-400" : ""}
           >
             📹 Vídeos
           </Link>
 
           <Link
             href="/admin/testimonials"
-            onClick={() => setOpen(false)}
-            className={
-              pathname.startsWith("/admin/testimonials")
-                ? "text-yellow-400"
-                : ""
-            }
+            className={pathname.startsWith("/admin/testimonials") ? "text-yellow-400" : ""}
           >
             📝 Testimonials
           </Link>
 
           <Link
             href="/admin/settings"
-            onClick={() => setOpen(false)}
-            className={
-              pathname.startsWith("/admin/settings")
-                ? "text-yellow-400"
-                : ""
-            }
+            className={pathname.startsWith("/admin/settings") ? "text-yellow-400" : ""}
           >
             ⚙️ Settings
           </Link>
@@ -138,47 +110,37 @@ function toggleTheme() {
         </button>
       </aside>
 
-      {/* Overlay mobile (acessível) */}
+      {/* Overlay mobile */}
       {open && (
-        <button type="button"
-          tabIndex={0}
+        <button
+          type="button"
           aria-label="Fechar menu"
           onClick={() => setOpen(false)}
-          onKeyDown={(e) => e.key === "Enter" && setOpen(false)}
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
         />
       )}
 
-      {/* ======================
-          CONTENT
-      ====================== */}
+      {/* ================= CONTENT ================= */}
       <div className="flex-1">
         {/* Header mobile */}
-        <header
-          className="
-            md:hidden fixed top-0 left-0 right-0 z-50 h-14
-            bg-white dark:bg-zinc-950
-            border-b border-zinc-200 dark:border-zinc-800
-            flex items-center justify-between px-4
-          "
-        >
+        <header className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-4">
           <span className="font-bold">
             <span className="text-yellow-400">Joe</span> Admin
           </span>
 
           <div className="flex items-center gap-3">
             <button
-              onClick={toggleTheme}
-              className="text-xl"
+              onClick={() => setIsDark((v) => !v)}
               aria-label="Alternar tema"
+              className="h-9 w-9 rounded-full border border-zinc-300 dark:border-zinc-700"
             >
-              {theme === "dark" ? "☀️" : "🌙"}
+              {isDark ? "☀️" : "🌙"}
             </button>
 
             <button
-              onClick={() => setOpen(true)}
-              className="text-2xl"
-              aria-label="Abrir menu"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Menu"
+              className="h-9 w-9 rounded-lg border border-zinc-300 dark:border-zinc-700"
             >
               ☰
             </button>
