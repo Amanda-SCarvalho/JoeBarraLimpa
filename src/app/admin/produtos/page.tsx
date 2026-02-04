@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Product } from "@/types/Product";
 
-
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState("");
@@ -14,7 +13,6 @@ export default function AdminProductsPage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
-  
 
   async function togglePublish(id: number, published: boolean) {
     await fetch(`/api/products/${id}`, {
@@ -27,22 +25,21 @@ export default function AdminProductsPage() {
   }
 
   // 🔄 BUSCAR PRODUTOS
-async function loadProducts() {
-  try {
-    const res = await fetch("/api/products?admin=true");
+  async function loadProducts() {
+    try {
+      const res = await fetch("/api/products?admin=true");
 
-    if (!res.ok) {
-      throw new Error("Erro ao buscar produtos");
+      if (!res.ok) {
+        throw new Error("Erro ao buscar produtos");
+      }
+
+      const json = await res.json();
+      setProducts(Array.isArray(json.data) ? json.data : []);
+    } catch (error) {
+      console.error(error);
+      setProducts([]);
     }
-
-    const json = await res.json();
-    setProducts(Array.isArray(json.data) ? json.data : []);
-  } catch (error) {
-    console.error(error);
-    setProducts([]);
   }
-}
-
 
   useEffect(() => {
     loadProducts();
@@ -234,6 +231,14 @@ async function loadProducts() {
 
             <span className="text-xs text-yellow-400">{product.category}</span>
 
+            <span
+              className={`text-xs font-bold ${
+                product.published ? "text-green-400" : "text-zinc-500"
+              }`}
+            >
+              {product.published ? "Visível no site" : "Somente no estoque"}
+            </span>
+
             <div className="flex gap-3 mt-3">
               <button
                 onClick={() => handleEdit(product)}
@@ -258,13 +263,6 @@ async function loadProducts() {
               >
                 {product.published ? "Publicado no site" : "Publicar"}
               </button>
-              <span
-                className={`text-xs font-bold ${
-                  product.published ? "text-green-400" : "text-zinc-500"
-                }`}
-              >
-                {product.published ? "Visível no site" : "Somente no estoque"}
-              </span>
             </div>
           </div>
         ))}
