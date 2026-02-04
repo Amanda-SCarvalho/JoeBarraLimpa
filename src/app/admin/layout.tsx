@@ -132,7 +132,12 @@ export default function AdminLayout({
             <button
               onClick={() => setIsDark((v) => !v)}
               aria-label="Alternar tema"
-              className="h-9 w-9 rounded-full border border-zinc-300 dark:border-zinc-700"
+              className="relative flex items-center justify-center
+                h-9 w-9 rounded-full
+                border border-zinc-300 dark:border-zinc-700
+                bg-white dark:bg-zinc-900
+                hover:bg-zinc-100 dark:hover:bg-zinc-800
+                transition-all"
             >
               {isDark ? "☀️" : "🌙"}
             </button>
@@ -140,7 +145,14 @@ export default function AdminLayout({
             <button
               onClick={() => setOpen((v) => !v)}
               aria-label="Menu"
-              className="h-9 w-9 rounded-lg border border-zinc-300 dark:border-zinc-700"
+              className="md:hidden
+    flex items-center justify-center
+    w-10 h-10
+    rounded-lg
+    border border-zinc-300 dark:border-zinc-700
+    bg-white dark:bg-zinc-900
+    hover:bg-zinc-100 dark:hover:bg-zinc-800
+    transition"
             >
               ☰
             </button>
