@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
