@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 
 export default function AdminLayout({
   children,
@@ -18,19 +18,20 @@ export default function AdminLayout({
   /* ======================
      THEME (dark / light)
   ====================== */
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (globalThis === undefined) return "dark";
-    return (localStorage.getItem("theme") as "light" | "dark") ?? "dark";
-  });
+const [theme, setTheme] = useState<"light" | "dark">(() => {
+  if (globalThis.window === undefined) return "dark";
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  return (localStorage.getItem("theme") as "light" | "dark") ?? "dark";
+});
 
-  function toggleTheme() {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  }
+function toggleTheme() {
+  const next = theme === "dark" ? "light" : "dark";
+
+  setTheme(next);
+  localStorage.setItem("theme", next);
+  document.documentElement.classList.toggle("dark", next === "dark");
+}
+
 
   /* ======================
      LOGOUT
