@@ -5,6 +5,8 @@ import VideosPreview from "@/components/home/VideosPreview";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/shared/CTA";
 import ContactAndTestimonialForm from "@/components/home/ContactAndTestimonialForm";
+export const dynamic = "force-dynamic";
+
 
 export default function Home() {
   return (
