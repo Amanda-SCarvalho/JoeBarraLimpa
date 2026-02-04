@@ -9,6 +9,15 @@ type Video = {
   thumbnail: string;
 };
 
+function getYoutubeId(url: string) {
+  try {
+    const parsed = new URL(url);
+    return parsed.searchParams.get("v");
+  } catch {
+    return null;
+  }
+}
+
 export default function Videos() {
   const [videos, setVideos] = useState<Video[]>([]);
 
@@ -34,20 +43,26 @@ export default function Videos() {
         {sortedVideos.map((video) => {
           /* ▶️ YOUTUBE */
           if (video.platform === "youtube") {
-            return (
-              <div
-                key={video.id}
-                className="aspect-video rounded-xl overflow-hidden shadow-lg bg-black"
-              >
-                <iframe
-                  className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${video.url}?rel=0`}
-                  title="YouTube video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            );
+            if (video.platform === "youtube") {
+              const videoId = getYoutubeId(video.url);
+
+              if (!videoId) return null;
+
+              return (
+                <div
+                  key={video.id}
+                  className="aspect-video rounded-xl overflow-hidden shadow-lg bg-black"
+                >
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                    title="YouTube video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              );
+            }
           }
 
           /* 📸 INSTAGRAM */
