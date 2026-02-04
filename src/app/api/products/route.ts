@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
+      where: { published: true },
     });
+    
 
     return NextResponse.json({ data: products });
   } catch (error) {
@@ -29,6 +32,7 @@ export async function POST(request: Request) {
         price: body.price,
         stock: body.stock,
         category: body.category || null,
+        published: body.published ?? false,
       },
     });
 

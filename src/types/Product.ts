@@ -7,6 +7,8 @@ export type Product = {
   price: number;     // preço
   stock: number;     // estoque
   category: string;  // categoria
+
+  published: boolean;
 };
 
 

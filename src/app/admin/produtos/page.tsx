@@ -14,23 +14,32 @@ export default function AdminProductsPage() {
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
 
+  async function togglePublish(id: number, published: boolean) {
+    await fetch(`/api/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ published: !published }),
+    });
+
+    loadProducts();
+  }
+
   // 🔄 BUSCAR PRODUTOS
   async function loadProducts() {
-  try {
-    const res = await fetch("/api/products");
+    try {
+      const res = await fetch("/api/products");
 
-    if (!res.ok) {
-      throw new Error("Erro ao buscar produtos");
+      if (!res.ok) {
+        throw new Error("Erro ao buscar produtos");
+      }
+
+      const json = await res.json();
+      setProducts(Array.isArray(json.data) ? json.data : []);
+    } catch (error) {
+      console.error(error);
+      setProducts([]);
     }
-
-    const json = await res.json();
-    setProducts(Array.isArray(json.data) ? json.data : []);
-  } catch (error) {
-    console.error(error);
-    setProducts([]);
   }
-}
-
 
   useEffect(() => {
     loadProducts();
@@ -42,7 +51,7 @@ export default function AdminProductsPage() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       setImage(e.target?.result as string);
     };
     reader.readAsDataURL(file);
@@ -50,51 +59,50 @@ export default function AdminProductsPage() {
 
   // ➕ / ✏️ SALVAR
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  if (loading) return;
+    e.preventDefault();
+    if (loading) return;
 
-  if (!name || !description || !price || !stock) {
-    alert("Preencha todos os campos obrigatórios");
-    return;
+    if (!name || !description || !price || !stock) {
+      alert("Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    setLoading(true);
+
+    const payload = {
+      name,
+      description,
+      image,
+      price: Number.parseFloat(price),
+      stock: Number.parseInt(stock),
+      category,
+    };
+
+    if (editingId === null) {
+      await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      await fetch(`/api/products/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    setName("");
+    setDescription("");
+    setImage("");
+    setPrice("");
+    setStock("");
+    setCategory("");
+    setEditingId(null);
+    setLoading(false);
+
+    loadProducts();
   }
-
-  setLoading(true);
-
-  const payload = {
-    name,
-    description,
-    image,
-    price: Number.parseFloat(price),
-    stock: Number.parseInt(stock),
-    category,
-  };
-
-  if (editingId === null) {
-    await fetch("/api/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-  } else {
-    await fetch(`/api/products/${editingId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-  }
-
-  setName("");
-  setDescription("");
-  setImage("");
-  setPrice("");
-  setStock("");
-  setCategory("");
-  setEditingId(null);
-  setLoading(false);
-
-  loadProducts();
-}
-
 
   // ✏️ EDITAR
   function handleEdit(product: Product) {
@@ -130,14 +138,14 @@ export default function AdminProductsPage() {
         <input
           placeholder="Nome do produto"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           className="p-3 rounded bg-zinc-800"
         />
 
         <textarea
           placeholder="Descrição"
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
           className="p-3 rounded bg-zinc-800"
         />
 
@@ -152,7 +160,7 @@ export default function AdminProductsPage() {
           type="number"
           placeholder="Preço (R$)"
           value={price}
-          onChange={e => setPrice(e.target.value)}
+          onChange={(e) => setPrice(e.target.value)}
           className="p-3 rounded bg-zinc-800"
         />
 
@@ -160,13 +168,13 @@ export default function AdminProductsPage() {
           type="number"
           placeholder="Estoque"
           value={stock}
-          onChange={e => setStock(e.target.value)}
+          onChange={(e) => setStock(e.target.value)}
           className="p-3 rounded bg-zinc-800"
         />
 
         <select
           value={category}
-          onChange={e => setCategory(e.target.value)}
+          onChange={(e) => setCategory(e.target.value)}
           className="p-3 rounded bg-zinc-800"
         >
           <option value="">Categoria</option>
@@ -194,7 +202,7 @@ export default function AdminProductsPage() {
 
       {/* LISTA */}
       <div className="grid md:grid-cols-3 gap-6">
-        {products.map(product => (
+        {products.map((product) => (
           <div key={product.id} className="bg-zinc-900 p-4 rounded-xl">
             {product.image && (
               <img
@@ -212,8 +220,9 @@ export default function AdminProductsPage() {
             </p>
 
             <p
-              className={`text-sm ${product.stock > 0 ? "text-green-400" : "text-red-400"
-                }`}
+              className={`text-sm ${
+                product.stock > 0 ? "text-green-400" : "text-red-400"
+              }`}
             >
               {product.stock > 0
                 ? `${product.stock} em estoque`
@@ -236,6 +245,23 @@ export default function AdminProductsPage() {
               >
                 Excluir
               </button>
+              <button
+                onClick={() => togglePublish(product.id, product.published)}
+                className={`flex-1 py-2 rounded font-bold ${
+                  product.published
+                    ? "bg-yellow-400 text-black"
+                    : "bg-zinc-700 text-white"
+                }`}
+              >
+                {product.published ? "Publicado no site" : "Publicar"}
+              </button>
+              <span
+                className={`text-xs font-bold ${
+                  product.published ? "text-green-400" : "text-zinc-500"
+                }`}
+              >
+                {product.published ? "Visível no site" : "Somente no estoque"}
+              </span>
             </div>
           </div>
         ))}

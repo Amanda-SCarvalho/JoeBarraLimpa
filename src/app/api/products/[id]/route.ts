@@ -1,19 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-type Params = {
+type Context = {
   params: Promise<{
     id: string;
   }>;
 };
 
-// 📥 GET PRODUTO
+// 📥 GET PRODUTO POR ID (admin)
 export async function GET(
-  _: NextRequest,
-  { params }: Params
+  _request: Request,
+  context: Context
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
 
     const product = await prisma.product.findUnique({
       where: { id: Number(id) },
@@ -36,24 +36,33 @@ export async function GET(
   }
 }
 
-// ✏️ ATUALIZAR PRODUTO
+// ✏️ ATUALIZAR PRODUTO / PUBLICAR / DESPUBLICAR
 export async function PUT(
-  request: NextRequest,
-  { params }: Params
+  request: Request,
+  context: Context
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     const body = await request.json();
+
+    // (opcional) impedir publicação sem estoque
+    if (body.published === true && body.stock === 0) {
+      return NextResponse.json(
+        { error: "Não é possível publicar produto sem estoque" },
+        { status: 400 }
+      );
+    }
 
     const product = await prisma.product.update({
       where: { id: Number(id) },
       data: {
-        name: body.name,
-        description: body.description,
-        image: body.image || null,
-        price: body.price,
-        stock: body.stock,
-        category: body.category || null,
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.image !== undefined && { image: body.image }),
+        ...(body.price !== undefined && { price: body.price }),
+        ...(body.stock !== undefined && { stock: body.stock }),
+        ...(body.category !== undefined && { category: body.category }),
+        ...(body.published !== undefined && { published: body.published }),
       },
     });
 
@@ -69,11 +78,11 @@ export async function PUT(
 
 // 🗑️ DELETAR PRODUTO
 export async function DELETE(
-  _: NextRequest,
-  { params }: Params
+  _request: Request,
+  context: Context
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
 
     await prisma.product.delete({
       where: { id: Number(id) },
