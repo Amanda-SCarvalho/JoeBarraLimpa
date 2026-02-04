@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Product } from "@/types/Product";
 
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [name, setName] = useState("");
@@ -13,6 +14,7 @@ export default function AdminProductsPage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [category, setCategory] = useState("");
+  
 
   async function togglePublish(id: number, published: boolean) {
     await fetch(`/api/products/${id}`, {
@@ -25,21 +27,22 @@ export default function AdminProductsPage() {
   }
 
   // 🔄 BUSCAR PRODUTOS
-  async function loadProducts() {
-    try {
-      const res = await fetch("/api/products");
+async function loadProducts() {
+  try {
+    const res = await fetch("/api/products?admin=true");
 
-      if (!res.ok) {
-        throw new Error("Erro ao buscar produtos");
-      }
-
-      const json = await res.json();
-      setProducts(Array.isArray(json.data) ? json.data : []);
-    } catch (error) {
-      console.error(error);
-      setProducts([]);
+    if (!res.ok) {
+      throw new Error("Erro ao buscar produtos");
     }
+
+    const json = await res.json();
+    setProducts(Array.isArray(json.data) ? json.data : []);
+  } catch (error) {
+    console.error(error);
+    setProducts([]);
   }
+}
+
 
   useEffect(() => {
     loadProducts();

@@ -2,17 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const admin = searchParams.get("admin");
+
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
-      where: { published: true },
+      where: admin ? {} : { published: true },
     });
-    
 
     return NextResponse.json({ data: products });
   } catch (error) {
-    console.error("GET /products error:", error);
     return NextResponse.json(
       { data: [], error: "Erro ao buscar produtos" },
       { status: 500 }
