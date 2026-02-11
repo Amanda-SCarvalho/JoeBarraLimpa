@@ -17,17 +17,26 @@ type NewAdmin = {
   role: Role;
 };
 
-type ApiError = {
-  error: string;
-};
 
 export default function AdminSettingsPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loggedUser, setLoggedUser] = useState<AdminUser | null>(null);
+
   const [newUser, setNewUser] = useState<NewAdmin>({
     username: "",
     password: "",
     role: "ADMIN",
   });
+
+  const [newPassword, setNewPassword] = useState("");
+
+  // 🔹 Carrega usuário logado
+  useEffect(() => {
+    const stored = localStorage.getItem("admin-user");
+    if (stored) {
+      setLoggedUser(JSON.parse(stored));
+    }
+  }, []);
 
   async function loadUsers() {
     try {
@@ -61,20 +70,10 @@ export default function AdminSettingsPage() {
       body: JSON.stringify(newUser),
     });
 
-    let data: AdminUser | ApiError | null = null;
-
-    try {
-      data = await res.json();
-    } catch {
-      data = null;
-    }
+    const data = await res.json();
 
     if (!res.ok) {
-      if (data && "error" in data) {
-        alert(data.error);
-      } else {
-        alert("Erro ao criar login");
-      }
+      alert(data.error || "Erro ao criar usuário");
       return;
     }
 
@@ -95,20 +94,17 @@ export default function AdminSettingsPage() {
     loadUsers();
   }
 
+  // 🔒 BLOQUEIO DE EXCLUSÃO DO PRÓPRIO USUÁRIO
   async function deleteUser(user: AdminUser) {
-    const firstConfirm = confirm(
-      `Tem certeza que deseja excluir o usuário "${user.username}"?`
-    );
-    if (!firstConfirm) return;
-
-    const secondConfirm = prompt(
-      `Digite EXCLUIR para confirmar a exclusão do usuário "${user.username}"`
-    );
-
-    if (secondConfirm !== "EXCLUIR") {
-      alert("Exclusão cancelada");
+    if (user.id === loggedUser?.id) {
+      alert("Você não pode excluir o próprio usuário.");
       return;
     }
+
+    const confirmDelete = confirm(
+      `Tem certeza que deseja excluir "${user.username}"?`
+    );
+    if (!confirmDelete) return;
 
     const res = await fetch("/api/admin/users", {
       method: "DELETE",
@@ -124,11 +120,69 @@ export default function AdminSettingsPage() {
     loadUsers();
   }
 
-  return (
-    <div className="max-w-3xl">
-      <h1 className="text-3xl font-bold mb-6">Admins</h1>
+  // 🔐 ALTERAR SENHA DO USUÁRIO LOGADO
+  async function changePassword() {
+    if (!newPassword) {
+      alert("Digite a nova senha");
+      return;
+    }
 
-      {/* FORMULÁRIO */}
+    if (!loggedUser) return;
+
+    const res = await fetch("/api/admin/users/password", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: loggedUser.id,
+        password: newPassword,
+      }),
+    });
+
+    if (!res.ok) {
+      alert("Erro ao alterar senha");
+      return;
+    }
+
+    alert("Senha alterada com sucesso");
+    setNewPassword("");
+  }
+
+  return (
+    <div className="max-w-3xl space-y-8">
+      <h1 className="text-3xl font-bold">Admins</h1>
+
+      {/* 👤 Usuário Logado */}
+      {loggedUser && (
+        <div className="bg-zinc-900 p-6 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Usuário Logado</h2>
+
+          <p className="mb-2">
+            <strong>Username:</strong> {loggedUser.username}
+          </p>
+          <p className="mb-4">
+            <strong>Role:</strong> {loggedUser.role}
+          </p>
+
+          <div className="flex gap-3">
+            <input
+              type="password"
+              placeholder="Nova senha"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="px-3 py-2 rounded bg-zinc-800 border border-zinc-700"
+            />
+
+            <button
+              onClick={changePassword}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold"
+            >
+              Alterar Senha
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ➕ Criar novo admin */}
       <div className="bg-zinc-900 p-6 rounded-xl">
         <h2 className="text-xl font-semibold mb-4">Criar novo admin</h2>
 
@@ -176,8 +230,8 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      {/* LISTA */}
-      <div className="grid gap-4 mt-6">
+      {/* 📋 Lista de Admins */}
+      <div className="grid gap-4">
         {users.map((user) => (
           <div
             key={user.id}
@@ -204,7 +258,12 @@ export default function AdminSettingsPage() {
 
               <button
                 onClick={() => deleteUser(user)}
-                className="px-3 py-2 rounded text-sm font-semibold bg-red-600 text-white"
+                disabled={user.id === loggedUser?.id}
+                className={`px-3 py-2 rounded text-sm font-semibold ${
+                  user.id === loggedUser?.id
+                    ? "bg-zinc-700 cursor-not-allowed"
+                    : "bg-red-600"
+                }`}
               >
                 Excluir
               </button>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Product } from "@/types/Product";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState("");
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
@@ -38,6 +40,21 @@ export default function AdminProductsPage() {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  // 🔎 FILTRO DE BUSCA
+  const filteredProducts = useMemo(() => {
+    const term = search.toLowerCase();
+
+    return products.filter((product) => {
+      return (
+        product.name.toLowerCase().includes(term) ||
+        product.description.toLowerCase().includes(term) ||
+        product.category?.toLowerCase().includes(term) ||
+        product.price.toString().includes(term) ||
+        product.stock.toString().includes(term)
+      );
+    });
+  }, [products, search]);
 
   function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -115,6 +132,17 @@ export default function AdminProductsPage() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Gerenciar Produtos</h1>
 
+      {/* 🔎 BARRA DE PESQUISA */}
+      <div className="mb-6 max-w-md">
+        <input
+          type="text"
+          placeholder="Pesquisar por nome, descrição, preço..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-3 rounded bg-zinc-800 border border-zinc-700"
+        />
+      </div>
+
       {/* FORM */}
       <form
         onSubmit={handleSubmit}
@@ -185,9 +213,9 @@ export default function AdminProductsPage() {
         </button>
       </form>
 
-      {/* LISTA */}
+      {/* LISTA FILTRADA */}
       <div className="grid md:grid-cols-3 gap-6">
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <div key={product.id} className="bg-zinc-900 p-4 rounded-xl">
             {product.image && (
               <img
@@ -213,49 +241,6 @@ export default function AdminProductsPage() {
                 ? `${product.stock} em estoque`
                 : "Sem estoque"}
             </p>
-
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">
-                {product.category}
-              </span>
-
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded-full ${
-                  product.published
-                    ? "text-green-400 bg-green-400/10"
-                    : "text-zinc-400 bg-zinc-700"
-                }`}
-              >
-                {product.published ? "Visível no site" : "Somente no estoque"}
-              </span>
-            </div>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => handleEdit(product)}
-                className="flex-1 bg-zinc-700 py-2 rounded"
-              >
-                Editar
-              </button>
-
-              <button
-                onClick={() => handleDelete(product.id)}
-                className="flex-1 bg-red-600 py-2 rounded"
-              >
-                Excluir
-              </button>
-
-              <button
-                onClick={() => togglePublish(product.id, product.published)}
-                className={`flex-1 py-2 rounded font-bold ${
-                  product.published
-                    ? "bg-yellow-400 text-black"
-                    : "bg-zinc-700 text-white"
-                }`}
-              >
-                {product.published ? "Publicado" : "Publicar"}
-              </button>
-            </div>
           </div>
         ))}
       </div>
