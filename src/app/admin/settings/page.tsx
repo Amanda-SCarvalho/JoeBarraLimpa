@@ -17,10 +17,8 @@ type NewAdmin = {
   role: Role;
 };
 
-
 export default function AdminSettingsPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loggedUser, setLoggedUser] = useState<AdminUser | null>(null);
 
   const [newUser, setNewUser] = useState<NewAdmin>({
     username: "",
@@ -31,12 +29,13 @@ export default function AdminSettingsPage() {
   const [newPassword, setNewPassword] = useState("");
 
   // 🔹 Carrega usuário logado
-  useEffect(() => {
-    const stored = localStorage.getItem("admin-user");
-    if (stored) {
-      setLoggedUser(JSON.parse(stored));
+  const [loggedUser] = useState<AdminUser | null>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("admin-user");
+      return stored ? JSON.parse(stored) : null;
     }
-  }, []);
+    return null;
+  });
 
   async function loadUsers() {
     try {
@@ -55,7 +54,10 @@ export default function AdminSettingsPage() {
   }
 
   useEffect(() => {
-    loadUsers();
+    async function init() {
+      await loadUsers();
+    }
+    init();
   }, []);
 
   async function createUser() {
@@ -102,7 +104,7 @@ export default function AdminSettingsPage() {
     }
 
     const confirmDelete = confirm(
-      `Tem certeza que deseja excluir "${user.username}"?`
+      `Tem certeza que deseja excluir "${user.username}"?`,
     );
     if (!confirmDelete) return;
 
@@ -236,7 +238,7 @@ export default function AdminSettingsPage() {
           <div
             key={user.id}
             className={`bg-zinc-900 p-4 rounded-xl flex justify-between items-center ${
-              !user.active ? "opacity-50" : ""
+              user.active ? "" : "opacity-50"
             }`}
           >
             <div>

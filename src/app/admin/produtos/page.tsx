@@ -132,17 +132,6 @@ export default function AdminProductsPage() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Gerenciar Produtos</h1>
 
-      {/* 🔎 BARRA DE PESQUISA */}
-      <div className="mb-6 max-w-md">
-        <input
-          type="text"
-          placeholder="Pesquisar por nome, descrição, preço..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full p-3 rounded bg-zinc-800 border border-zinc-700"
-        />
-      </div>
-
       {/* FORM */}
       <form
         onSubmit={handleSubmit}
@@ -212,6 +201,17 @@ export default function AdminProductsPage() {
           {editingId ? "Salvar alterações" : "Adicionar produto"}
         </button>
       </form>
+
+      {/* 🔎 BARRA DE PESQUISA */}
+      <div className="mb-6 max-w-md">
+        <input
+          type="text"
+          placeholder="Pesquisar por nome, descrição, preço..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-3 rounded bg-zinc-800 border border-zinc-700"
+        />
+      </div>
 
       {/* LISTA FILTRADA */}
       <div className="grid md:grid-cols-3 gap-6">
