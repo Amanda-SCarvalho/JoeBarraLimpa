@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CreateAdminForm } from "@/components/admin/CreateAdminForm";
 
 type Role = "ADMIN" | "EDITOR";
 
@@ -51,6 +50,11 @@ export default function AdminSettingsPage() {
   }, []);
 
   async function createUser() {
+    if (!newUser.username || !newUser.password) {
+      alert("Preencha todos os campos");
+      return;
+    }
+
     const res = await fetch("/api/admin/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -122,16 +126,63 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-3xl">
-      
       <h1 className="text-3xl font-bold mb-6">Admins</h1>
 
-      {/* Lista */}
+      {/* FORMULÁRIO */}
+      <div className="bg-zinc-900 p-6 rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">Criar novo admin</h2>
+
+        <div className="flex flex-col gap-3">
+          <input
+            type="text"
+            placeholder="Username"
+            value={newUser.username}
+            onChange={(e) =>
+              setNewUser((prev) => ({ ...prev, username: e.target.value }))
+            }
+            className="px-3 py-2 rounded bg-zinc-800 border border-zinc-700"
+          />
+
+          <input
+            type="password"
+            placeholder="Senha"
+            value={newUser.password}
+            onChange={(e) =>
+              setNewUser((prev) => ({ ...prev, password: e.target.value }))
+            }
+            className="px-3 py-2 rounded bg-zinc-800 border border-zinc-700"
+          />
+
+          <select
+            value={newUser.role}
+            onChange={(e) =>
+              setNewUser((prev) => ({
+                ...prev,
+                role: e.target.value as Role,
+              }))
+            }
+            className="px-3 py-2 rounded bg-zinc-800 border border-zinc-700"
+          >
+            <option value="ADMIN">ADMIN</option>
+            <option value="EDITOR">EDITOR</option>
+          </select>
+
+          <button
+            onClick={createUser}
+            className="bg-green-600 hover:bg-green-700 transition px-4 py-2 rounded font-semibold"
+          >
+            Criar usuário
+          </button>
+        </div>
+      </div>
+
+      {/* LISTA */}
       <div className="grid gap-4 mt-6">
         {users.map((user) => (
           <div
             key={user.id}
             className={`bg-zinc-900 p-4 rounded-xl flex justify-between items-center ${
-              !user.active && "opacity-50"
+              !user.active ? "opacity-50" : ""
             }`}
           >
             <div>
