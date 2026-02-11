@@ -162,7 +162,7 @@ useEffect(() => {
 
       {/* 👤 Usuário Logado */}
       {loggedUser && (
-        <div className="bg-zinc-900 p-6 rounded-xl">
+        <div className="bg-zinc-900 p-6 rounded-xl mb-4">
           <h2 className="text-xl font-semibold mb-4">Minha Conta</h2>
 
           <div className="space-y-2 mb-4">
@@ -197,7 +197,7 @@ useEffect(() => {
       )}
 
       {/* ➕ Criar novo admin */}
-      <div className="bg-zinc-900 p-6 rounded-xl">
+      <div className="bg-zinc-900 p-6 rounded-xl mb-4">
         <h2 className="text-xl font-semibold mb-4">Criar novo admin</h2>
 
         <div className="flex flex-col gap-3">
