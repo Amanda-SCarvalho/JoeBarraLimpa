@@ -5,20 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import Image from "next/image";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Header() {
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const { cart } = useCart();
 
   const totalItems = cart.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
-
-  // Carregar tema salvo
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    setIsDark(saved === "dark");
-  }, []);
 
   // Aplicar tema
   useEffect(() => {
@@ -105,16 +100,16 @@ export default function Header() {
 
             {/* Dark mode */}
             <button
-              onClick={() => setIsDark((prev) => !prev)}
+              onClick={toggleTheme}
               aria-label="Alternar tema"
               className="
-                relative flex items-center justify-center
-                h-9 w-9 rounded-full
-                border border-zinc-300 dark:border-zinc-700
-                bg-white dark:bg-zinc-900
-                hover:bg-zinc-100 dark:hover:bg-zinc-800
-                transition-all
-              "
+    relative flex items-center justify-center
+    h-9 w-9 rounded-full
+    border border-zinc-300 dark:border-zinc-700
+    bg-white dark:bg-zinc-900
+    hover:bg-zinc-100 dark:hover:bg-zinc-800
+    transition-all
+  "
             >
               <span
                 className={`absolute transition-all ${
@@ -210,7 +205,7 @@ export default function Header() {
 
       {/* Menu Mobile */}
       <aside
-         className={`
+        className={`
     fixed top-0 right-0 z-50 h-full w-72
     bg-white dark:bg-zinc-950
     text-zinc-900 dark:text-zinc-100
