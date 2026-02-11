@@ -27,15 +27,22 @@ export default function AdminSettingsPage() {
   });
 
   const [newPassword, setNewPassword] = useState("");
+  const [loggedUser, setLoggedUser] = useState<AdminUser | null>(null);
 
   // 🔹 Carrega usuário logado
-  const [loggedUser] = useState<AdminUser | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("admin-user");
-      return stored ? JSON.parse(stored) : null;
-    }
-    return null;
-  });
+useEffect(() => {
+  async function loadLoggedUser() {
+    const res = await fetch("/api/admin/me");
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    setLoggedUser(data);
+  }
+
+  loadLoggedUser();
+}, []);
+
 
   async function loadUsers() {
     try {
