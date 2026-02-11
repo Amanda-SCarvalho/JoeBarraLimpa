@@ -156,14 +156,19 @@ export default function AdminSettingsPage() {
       {/* 👤 Usuário Logado */}
       {loggedUser && (
         <div className="bg-zinc-900 p-6 rounded-xl">
-          <h2 className="text-xl font-semibold mb-4">Usuário Logado</h2>
+          <h2 className="text-xl font-semibold mb-4">Minha Conta</h2>
 
-          <p className="mb-2">
-            <strong>Username:</strong> {loggedUser.username}
-          </p>
-          <p className="mb-4">
-            <strong>Role:</strong> {loggedUser.role}
-          </p>
+          <div className="space-y-2 mb-4">
+            <p>
+              <strong>Username:</strong> {loggedUser.username}
+            </p>
+            <p>
+              <strong>Role:</strong> {loggedUser.role}
+            </p>
+            <p>
+              <strong>Senha:</strong> ********
+            </p>
+          </div>
 
           <div className="flex gap-3">
             <input
